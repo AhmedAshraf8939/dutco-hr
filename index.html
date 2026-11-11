@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive">
+<title>Dutco HR Solutions</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#001F69;font-family:Inter,Segoe UI,Arial,sans-serif;color:#1d2433;padding:16px}
+.c{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:100%;max-width:380px;padding:30px 28px}
+.b{display:flex;align-items:center;gap:10px;margin-bottom:18px}.lg{width:42px;height:42px;border-radius:10px;background:#FDCC00;color:#001F69;font-weight:900;font-size:22px;display:flex;align-items:center;justify-content:center}
+.b div{font-weight:800;color:#001F69;letter-spacing:1px}.b small{display:block;font-weight:500;color:#6b7590;letter-spacing:0;font-size:12px}
+label{display:block;font-size:11px;font-weight:700;color:#5a6479;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 5px}
+input{width:100%;padding:11px 12px;border:1.5px solid #d5dbe8;border-radius:9px;font-size:14px}input:focus{outline:none;border-color:#001F69}
+button{width:100%;margin-top:18px;padding:12px;border:0;border-radius:9px;background:#001F69;color:#fff;font-weight:700;font-size:14px;cursor:pointer}button:disabled{opacity:.6;cursor:wait}
+.e{display:none;margin-top:12px;color:#b3261e;font-size:12.5px;line-height:1.5}.n{margin-top:16px;font-size:11px;color:#7a849d;line-height:1.5;display:flex;gap:6px}
+.st{margin-top:10px;font-size:12px;color:#5a6479;min-height:16px}
+.pw{position:relative}.pw input{padding-right:64px}.pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:auto;margin:0;padding:6px 10px;background:#eef1f7;color:#001F69;font-size:12px;border-radius:7px}
+input{font-size:16px}
+.bar{height:3px;background:#eef1f7;border-radius:2px;margin-top:12px;overflow:hidden;display:none}.bar i{display:block;height:100%;width:40%;background:#FDCC00;animation:m 1s infinite linear}@keyframes m{0%{margin-left:-40%}100%{margin-left:100%}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+</head><body>
+<form class="c" id="f" autocomplete="on" action="#" onsubmit="return false" method="post"><div class="b"><span class="lg">D</span><div>DUTCO HR<small>P&amp;C Workforce Intelligence · live</small></div></div>
+<div id="fl"><label for="u">Employee code</label><input id="u" name="username" autocomplete="username" autocapitalize="characters" autocorrect="off" spellcheck="false" required autofocus placeholder="DCC#####">
+<label for="p">Password</label><div class="pw"><input id="p" name="password" type="password" autocomplete="current-password" required><button type="button" id="eye" aria-label="Show password" title="Show password">Show</button></div></div>
+<button id="go" type="submit">Sign in</button><div class="bar" id="bar"><i></i></div><div class="st" id="st"></div><div class="e" id="e"></div>
+<div class="n"><span>🔒</span><span>Nothing is stored in this page. After sign-in, the portal and only the data your account may see are loaded from the secure database.</span></div></form>
+<script id="cfg" type="application/json">{"url":"https://cixjyogmqxkzymnzhmii.supabase.co","key":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpeGp5b2dtcXhrenltbnpobWlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNzk5NjAsImV4cCI6MjEwOTk1NTk2MH0.DZ5TPFhl6inV8y5Li9hqZ16rsMHqkJiYzxDyiHFxS2s"}</script>
+<script>
+(function(){const $=i=>document.getElementById(i);
+const say=t=>{$('st').textContent=t||'';};
+const err=t=>{$('e').textContent=t;$('e').style.display='block';$('go').disabled=false;$('go').style.display='';$('bar').style.display='none';say('');$('fl').style.display='';};
+window.addEventListener('error',ev=>{try{err('Could not start: '+(ev.message||'unknown error')+'. Reload the page; if it repeats, send a screenshot to the administrator.');}catch(x){}});
+window.addEventListener('unhandledrejection',ev=>{try{err('Could not start: '+((ev.reason&&ev.reason.message)||ev.reason||'unknown error'));}catch(x){}});
+/* the form never reloads the page — sign-in is handled here */
+let ready=null;const f=$('f');
+$('eye').addEventListener('click',()=>{const p=$('p'),on=p.type==='password';p.type=on?'text':'password';$('eye').textContent=on?'Hide':'Show';$('eye').setAttribute('aria-label',on?'Hide password':'Show password');p.focus();});
+const load=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('blocked'));document.head.appendChild(s);});
+async function lib(){if(window.supabase&&window.supabase.createClient)return;
+  try{await load('https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js');}catch(e){}
+  if(!(window.supabase&&window.supabase.createClient))throw new Error('The sign-in library could not load. Check the internet connection (try mobile data instead of Wi-Fi) and reload.');}
+async function needPako(){if(window.pako)return;await load('https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js');}
+const C=JSON.parse($('cfg').textContent);let sb=null;
+const mail=e=>String(e||'').replace(/[^A-Za-z0-9]/g,'').toLowerCase()+'@dutco-hr.local';
+const b64=u=>{let x='';for(let i=0;i<u.length;i+=0x8000)x+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(x);};
+const z1=async s=>{if(window.CompressionStream){const st=new Blob([s]).stream().pipeThrough(new CompressionStream('deflate'));return 'Z1:'+b64(new Uint8Array(await new Response(st).arrayBuffer()));}
+  try{await needPako();return 'Z1:'+b64(pako.deflate(s));}catch(e){return s;}};
+const ungz=async v=>{const b=atob(v),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
+  if(window.DecompressionStream){const st=new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'));return await new Response(st).text();}
+  await needPako();return pako.ungzip(u,{to:'string'});};
+const idb=(m,v)=>new Promise(res=>{try{const r=indexedDB.open('dhs-cache',1);r.onupgradeneeded=()=>r.result.createObjectStore('c');r.onerror=()=>res(null);
+  r.onsuccess=()=>{try{const tx=r.result.transaction('c',m==='get'?'readonly':'readwrite'),s=tx.objectStore('c');const q=m==='get'?s.get('app'):s.put(v,'app');q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);}catch(e){res(null);}};}catch(e){res(null);}});
+const MAP={orgset:['dhs7_orgset','big'],mpset:['dhs6_mpset','big'],emp:['dhs5_empraw','blob'],man:['dhs5_manraw','blob'],meta:['dhs5_meta','raw'],
+  gradeov:['dhs5_gradeov','json'],setov:['dhs5_setov','json'],rdov:['dhs5_rdov','json'],ann:['dhs4_ann','json'],cdoc:['dhs4_cdoc','json']};
+async function boot(){$('go').disabled=true;$('bar').style.display='block';$('e').style.display='none';
+  try{const u=(await sb.auth.getUser()).data.user;if(!u)throw new Error('Sign in again');
+    say('Checking your access…');
+    const pr=await sb.from('dhs_profiles').select('*').eq('uid',u.id).single();
+    if(pr.error||!pr.data){await sb.auth.signOut();throw new Error('This account has no access to the portal. Ask the administrator.');}
+    const me=pr.data,admin=me.role==='ADMIN';
+    say('Loading…');
+    const vl=await sb.from('dhs_docs').select('k,ver');if(vl.error)throw vl.error;
+    const V={};vl.data.forEach(r=>V[r.k]=r.ver);
+    if(V.app==null){throw new Error(admin?'The live database has no portal yet. Open your portal file › Data Center › Publish › Live website, and click "Upload everything".':'The portal has not been uploaded yet. Ask the administrator.');}
+    const pick=k=>!admin&&['emp','man','mpset'].includes(k)?k+'_pl':k;
+    const want=Object.keys(MAP).map(pick).filter(k=>V[k]!=null);
+    let app=await idb('get');if(!app||app.ver!==V.app){say('Loading the portal…');const r=await sb.from('dhs_docs').select('val,blob,ver').eq('k','app').single();if(r.error)throw r.error;
+      app={ver:r.data.ver,html:await ungz(r.data.blob),build:(r.data.val||{}).build};await idb('put',app);}
+    say('Loading your data…');
+    const dr=await sb.from('dhs_docs').select('k,val,blob,ver').in('k',want);if(dr.error)throw dr.error;
+    const docs={};dr.data.forEach(r=>{docs[r.k.replace(/_pl$/,'')]=r;});
+    Object.values(MAP).forEach(([ls])=>{try{localStorage.removeItem(ls);}catch(e){}});
+    ['dhs4_users','dhs4_aud','dcc_job_architecture_v2','dhs5_admpw','dhs5_lastchanges','dhs5_lastreport'].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
+    for(const [k,[ls,kind]] of Object.entries(MAP)){const r=docs[k];if(!r)continue;
+      const v=kind==='blob'?r.blob:kind==='big'?await z1(JSON.stringify(r.val)):JSON.stringify(r.val);if(v==null)continue;
+      try{localStorage.setItem(ls,v);}catch(e){throw new Error('This browser has no room for the data. Close private browsing, or clear this site\'s stored data, and sign in again.');}}
+    try{if(docs.mpset&&docs.mpset.val&&docs.mpset.val.jarch)localStorage.setItem('dcc_job_architecture_v2',docs.mpset.val.jarch);}catch(e){}
+    localStorage.setItem('dhs5_build',app.build||'');
+    let users=[];if(admin){const ur=await sb.from('dhs_profiles').select('*');if(!ur.error)users=ur.data;}
+    localStorage.setItem('dhs4_users',JSON.stringify(users.filter(x=>x.uid!==me.uid).map(x=>({user:x.emp,pw:x.pw,role:x.role,grants:x.grants,hide:x.hide,edit:x.edit,emp:x.emp,created:x.created,uid:x.uid}))));
+    const ar=await sb.from('dhs_audit').select('ts,emp,action,obj,det').order('id',{ascending:false}).limit(600);
+    if(!ar.error)localStorage.setItem('dhs4_aud',JSON.stringify(ar.data.map(a=>({ts:a.ts,user:a.emp,action:a.action,obj:a.obj,det:a.det}))));
+    let twin=null;if(admin&&V.mpset_pl!=null){const t=await sb.from('dhs_docs').select('val').eq('k','mpset_pl').single();if(!t.error)twin=t.data.val;}
+    const ver={},snap={};Object.entries(docs).forEach(([k,r])=>{ver[k]=r.ver;snap[k]=MAP[k][1]==='blob'?r.blob:r.val;});
+    window.__CLOUD={url:C.url,key:C.key,me,users,ver,snap,twin:{mpset:twin},appVer:app.ver};
+    try{sb.auth.stopAutoRefresh();}catch(e){}
+    say('Opening…');
+    document.open();document.write(app.html);document.close();
+  }catch(x){err((x&&x.message)||String(x));}}
+async function signIn(){const code=$('u').value.trim(),pw=$('p').value;
+  if(!code||!pw){err('Type your employee code and password.');return;}
+  $('e').style.display='none';$('go').disabled=true;$('bar').style.display='block';say('Signing in…');
+  try{await ready;}catch(e){err(e.message);return;}
+  const r=await sb.auth.signInWithPassword({email:mail(code),password:pw});
+  if(r.error){err(/invalid/i.test(r.error.message)?'Wrong employee code or password.':r.error.message);$('p').value='';$('p').focus();return;}
+  /* let the browser offer to save the password */
+  try{if(window.PasswordCredential&&navigator.credentials)await navigator.credentials.store(new PasswordCredential({id:code,password:pw,name:code}));}catch(e){}
+  boot();}
+f.addEventListener('submit',ev=>{ev.preventDefault();signIn();});
+ready=(async()=>{await lib();sb=supabase.createClient(C.url,C.key,{auth:{persistSession:true,storageKey:'dhs-auth'}});return sb;})();
+ready.then(async()=>{const s=(await sb.auth.getSession()).data.session;if(s){$('fl').style.display='none';$('go').style.display='none';boot();}}).catch(e=>err(e.message));
+})();
+</script></body></html>
