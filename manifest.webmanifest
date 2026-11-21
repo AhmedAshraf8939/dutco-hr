@@ -1,13 +1,13 @@
 {
- "name": "Dutco HR Solutions",
- "short_name": "Dutco HR",
- "description": "P&C Workforce Intelligence — Dutco Construction",
+ "name": "DUTCO HR",
+ "short_name": "DUTCO HR",
+ "description": "People & Culture \u2014 Dutco Construction",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
  "orientation": "any",
- "background_color": "#001F69",
- "theme_color": "#001F69",
+ "background_color": "#211F62",
+ "theme_color": "#211F62",
  "icons": [
   {
    "src": "icon-192.png",
