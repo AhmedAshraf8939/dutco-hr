@@ -54,6 +54,15 @@ const idb=(m,v)=>new Promise(res=>{try{const r=indexedDB.open('dhs-cache',1);r.o
   r.onsuccess=()=>{try{const tx=r.result.transaction('c',m==='get'?'readonly':'readwrite'),s=tx.objectStore('c');const q=m==='get'?s.get('app'):s.put(v,'app');q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);}catch(e){res(null);}};}catch(e){res(null);}});
 const MAP={orgset:['dhs7_orgset','big'],mpset:['dhs6_mpset','big'],emp:['dhs5_empraw','blob'],man:['dhs5_manraw','blob'],meta:['dhs5_meta','raw'],
   gradeov:['dhs5_gradeov','json'],setov:['dhs5_setov','json'],rdov:['dhs5_rdov','json'],ann:['dhs4_ann','json'],cdoc:['dhs4_cdoc','json']};
+async function cpAuto(sb,me){const b64=buf=>{const u=new Uint8Array(buf);let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s);};
+  const kp=await crypto.subtle.generateKey({name:'RSA-OAEP',modulusLength:3072,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['encrypt','decrypt']);
+  const jwk=await crypto.subtle.exportKey('jwk',kp.privateKey);const pub='DCCPUB1:'+b64(await crypto.subtle.exportKey('spki',kp.publicKey));
+  const d=new Date(Date.now()+4*3600e3).toISOString();const r=await sb.rpc('dhs_put',{p_k:'cpkey',p_val:{jwk,pub,ts:d.slice(0,10)+' '+d.slice(11,16),by:me.emp||''},p_blob:null,p_tval:null,p_tblob:null,p_sid:null});if(r.error)throw r.error;
+  await new Promise(res=>{const o=document.createElement('div');o.id='cpAuto';o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(14,26,46,.55);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Arial,sans-serif';
+   o.innerHTML='<div style="background:#fff;border-radius:16px;max-width:560px;width:100%;padding:22px"><div style="font-size:18px;font-weight:700;color:#001F69;margin-bottom:6px">One last step: copy this code to Claude</div><div style="font-size:14px;color:#3B475C;line-height:1.5;margin-bottom:12px">Tap Copy, then paste it in your chat with Claude. It only lets Claude lock new versions; it cannot unlock anything or read any data. You will not see this again.</div><textarea readonly id="cpAutoT" style="width:100%;height:110px;font:11px/1.4 monospace;border:1px solid #D3D9E4;border-radius:10px;padding:8px;word-break:break-all;box-sizing:border-box"></textarea><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="cpAutoC" style="background:#FDCC00;color:#001F69;border:0;border-radius:10px;padding:10px 16px;font-weight:700">Copy code</button><button id="cpAutoX" style="background:#001F69;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700">Continue</button></div></div>';
+   document.body.appendChild(o);const t=o.querySelector('#cpAutoT');t.value=pub;
+   o.querySelector('#cpAutoC').onclick=async()=>{try{await navigator.clipboard.writeText(pub);o.querySelector('#cpAutoC').textContent='Copied';}catch(e){t.focus();t.select();}};
+   o.querySelector('#cpAutoX').onclick=()=>{o.remove();res();};});}
 async function cpOpen(g,jwk){const u8=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;};
   const pk=await crypto.subtle.importKey('jwk',jwk,{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);
   const raw=await crypto.subtle.decrypt({name:'RSA-OAEP'},pk,u8(g.wk));const k=await crypto.subtle.importKey('raw',raw,{name:'AES-GCM'},false,['decrypt']);
@@ -97,6 +106,7 @@ async function boot(){$('go').disabled=true;$('bar').style.display='block';$('e'
     const ver={},snap={};Object.entries(docs).forEach(([k,r])=>{ver[k]=r.ver;snap[k]=MAP[k][1]==='blob'?r.blob:r.val;});
     window.__CLOUD={url:C.url,key:C.key,me,users,ver,snap,twin:{mpset:twin},appVer:app.ver,lv:2};
     try{sb.auth.stopAutoRefresh();}catch(e){}
+    if(admin&&V.cpkey==null){try{await cpAuto(sb,me);}catch(e){console.warn('cp key',e);}}
     say('Opening…');
     document.open();document.write(app.html);document.close();
   }catch(x){err((x&&x.message)||String(x));}}
