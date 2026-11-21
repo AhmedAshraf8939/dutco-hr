@@ -54,6 +54,12 @@ const idb=(m,v)=>new Promise(res=>{try{const r=indexedDB.open('dhs-cache',1);r.o
   r.onsuccess=()=>{try{const tx=r.result.transaction('c',m==='get'?'readonly':'readwrite'),s=tx.objectStore('c');const q=m==='get'?s.get('app'):s.put(v,'app');q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);}catch(e){res(null);}};}catch(e){res(null);}});
 const MAP={orgset:['dhs7_orgset','big'],mpset:['dhs6_mpset','big'],emp:['dhs5_empraw','blob'],man:['dhs5_manraw','blob'],meta:['dhs5_meta','raw'],
   gradeov:['dhs5_gradeov','json'],setov:['dhs5_setov','json'],rdov:['dhs5_rdov','json'],ann:['dhs4_ann','json'],cdoc:['dhs4_cdoc','json']};
+async function cpOpen(g,jwk){const u8=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;};
+  const pk=await crypto.subtle.importKey('jwk',jwk,{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);
+  const raw=await crypto.subtle.decrypt({name:'RSA-OAEP'},pk,u8(g.wk));const k=await crypto.subtle.importKey('raw',raw,{name:'AES-GCM'},false,['decrypt']);
+  const z=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:u8(g.iv)},k,u8(g.ct)));
+  if(window.DecompressionStream){const st=new Blob([z]).stream().pipeThrough(new DecompressionStream('gzip'));return await new Response(st).text();}
+  await needPako();return pako.ungzip(z,{to:'string'});}
 async function boot(){$('go').disabled=true;$('bar').style.display='block';$('e').style.display='none';
   try{const u=(await sb.auth.getUser()).data.user;if(!u)throw new Error('Sign in again');
     say('Checking your access…');
@@ -66,7 +72,12 @@ async function boot(){$('go').disabled=true;$('bar').style.display='block';$('e'
     if(V.app==null){throw new Error(admin?'The live database has no portal yet. Open your portal file › Data Center › Publish › Live website, and click "Upload everything".':'The portal has not been uploaded yet. Ask the administrator.');}
     const full=admin||me.pay==='full';const pick=k=>!full&&['emp','man','mpset'].includes(k)?k+'_pl':k;
     const want=Object.keys(MAP).map(pick).filter(k=>V[k]!=null);
-    let app=await idb('get');if(!app||app.ver!==V.app){say('Loading the portal…');const r=await sb.from('dhs_docs').select('val,blob,ver').eq('k','app').single();if(r.error)throw r.error;
+    let app=await idb('get');let useGh=false;
+    if(V.cpkey!=null){try{const rr=await fetch('app.enc.json?t='+Date.now(),{cache:'no-store'});const g=rr.ok?await rr.json():null;
+      if(g&&g.ct){const av=await sb.from('dhs_docs').select('val').eq('k','app').single();const ats=String(((av.data||{}).val||{}).ts||'');useGh=String(g.ts||'')>ats;
+        if(useGh){const tag='gh:'+g.ts+':'+V.cpkey;if(!app||app.ver!==tag){say('Loading the portal…');const kr=await sb.from('dhs_docs').select('val').eq('k','cpkey').single();
+          app={ver:tag,html:await cpOpen(g,kr.data.val.jwk),build:g.build};await idb('put',app);}}}}catch(e){console.warn('locked app',e);useGh=false;}}
+    if(!useGh&&(!app||app.ver!==V.app)){say('Loading the portal…');const r=await sb.from('dhs_docs').select('val,blob,ver').eq('k','app').single();if(r.error)throw r.error;
       app={ver:r.data.ver,html:await ungz(r.data.blob),build:(r.data.val||{}).build};await idb('put',app);}
     say('Loading your data…');
     const dr=await sb.from('dhs_docs').select('k,val,blob,ver').in('k',want);if(dr.error)throw dr.error;
